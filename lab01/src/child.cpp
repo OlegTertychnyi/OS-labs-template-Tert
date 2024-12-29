@@ -22,8 +22,8 @@ int main(int argc, char* argv[]) {
             sum += num;
         }
     }, std::cin);
-
-    write(STDOUT_FILENO, (std::to_string(sum) + '\n').c_str(), (std::to_string(sum) + '\n').size());
+    std::string str = std::to_string(sum) + '\n';
+    write(STDOUT_FILENO, str.c_str(), str.size());
 
     fclose(file);
     close(STDOUT_FILENO);

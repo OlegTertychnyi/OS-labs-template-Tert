@@ -7,10 +7,9 @@
 #include <fstream>
 #include <memory>
 
-
 class TempFile {
 public:
-    TempFile(const std::string& fName) : filename(fName) {
+    explicit TempFile(const std::string& fName) : filename(fName) {
         std::ofstream file(filename);
         if (!file) {
             throw std::runtime_error("Не удалось создать временный файл: " + filename);
@@ -22,15 +21,14 @@ public:
     }
 
     ~TempFile() {
-        if (std::filesystem::exists(filename)){
+        if (std::filesystem::exists(filename)) {
             std::remove(filename.c_str());
-        };
+        }
     }
 
 private:
     std::string filename;
 };
-
 
 std::string ReadFileContent(const std::string& filename) {
     std::ifstream file(filename);
@@ -54,18 +52,24 @@ TEST(UtilsTest, ReadNumbersTest) {
 }
 
 TEST(ProcessTest, ParentProcessTest) {
-    int pipefd[2];
-    ASSERT_EQ(pipe(pipefd), 0) << "Pipe creation failed";
-    TempFile filename("output.txt");
+    const std::string output_file = std::filesystem::absolute("output.txt").string();
 
-    std::istringstream input_stream("/home/optert/OS-labs-template-Tert/build/output.txt\n10 5 15\n");    
-    // std::string filename = "output.txt";
+    const std::string parent_input = output_file + "\n10 20 30\n";
+    std::istringstream input_stream(parent_input);
 
     ParentMain(input_stream);
 
-    std::string content = ReadFileContent(filename.getFilename());
-    EXPECT_EQ(content, "");
+    std::ifstream result_file(output_file);
+    ASSERT_TRUE(result_file.is_open()) << "Failed to open output file";
+
+    std::string content;
+    std::getline(result_file, content);
+    EXPECT_EQ(content, "60");
+
+    result_file.close();
+    std::filesystem::remove(output_file);
 }
+
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
